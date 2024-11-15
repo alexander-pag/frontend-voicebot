@@ -6,9 +6,6 @@ const VoiceToText = () => {
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
   const [chatMessages, setChatMessages] = useState([]);
-  const [cost, setCost] = useState(null);
-  const [wordCount, setWordCount] = useState(null);
-  const [tokenCount, setTokenCount] = useState(null);
   const [mediaRecorder, setMediaRecorder] = useState(null);
   const [showWelcomeMessage, setShowWelcomeMessage] = useState(true);
 
@@ -45,28 +42,16 @@ const VoiceToText = () => {
         headers: { "Content-Type": "multipart/form-data" },
       })
       .then((response) => {
+        addChatMessage(response.data.text, "user");
+        addChatMessage(response.data.response, "bot");
+        setemocionesCount(true);
+
         setCost((prevState) => prevState + response.data.cost);
         setTokenCount((prevState) => prevState + response.data.token_count);
         setWordCount((prevState) => prevState + response.data.word_count);
-        setemocionesCount(true);
 
-        addChatMessage(response.data.text, "user");
-        addChatMessage(response.data.response, "bot");
         const audioUrl = response.data.audioUrl;
         playAudio(audioUrl);
-
-        /**
-         * Se calcula la emocion promedio si no es 0, null o undefined
-         */
-        if (
-          response.data.user_emotion !== 0 &&
-          response.data.user_emotion !== null &&
-          response.data.user_emotion !== undefined
-        ) {
-          setNewVariable(
-            (prevValue) => (prevValue + response.data.user_emotion) / 2
-          );
-        }
       })
       .catch((error) => {
         setError(`Error al comunicarse con el servidor: ${error.message}`);
@@ -104,6 +89,28 @@ const VoiceToText = () => {
     }
   };
 
+  const handleExportConversation = () => {
+    console.log(chatMessages);
+
+    // exportar el archivo indicando quien es el emisor
+    const messages = chatMessages.map((message) => {
+      return `${message.sender === "user" ? "Usuario" : "Bot"}: ${
+        message.text
+      }`;
+    });
+
+    const blob = new Blob([messages.join("\n")], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "conversacion.txt";
+    a.click();
+  };
+
+  const handleStartConversation = () => {
+    addChatMessage("Hola, en qué puedo ayudarte?", "bot");
+  };
+
   const addChatMessage = (text, sender) => {
     setChatMessages((prevMessages) => [...prevMessages, { text, sender }]);
   };
@@ -114,6 +121,11 @@ const VoiceToText = () => {
       <div id="permissions-warning" className="permissions-warning">
         ⚠️ Se requieren permisos de micrófono para esta aplicación
       </div>
+
+      <button onClick={handleStartConversation} className="interaction-button">
+        Iniciar interacción
+      </button>
+
       <div id="chat" className="chat-container">
         {chatMessages.map((message, index) => (
           <div
@@ -129,7 +141,7 @@ const VoiceToText = () => {
         <div className="message_bienvenida">¿En qué puedo ayudarte?</div>
       )}
 
-      <div class="botones">
+      <div className="botones">
         <button
           id="start"
           onClick={handleStartButtonClick}
@@ -141,26 +153,23 @@ const VoiceToText = () => {
 
         <button
           id="export"
-          onClick={handleStartButtonClick}
-          disabled={status.includes("Permiso denegado")}
+          onClick={handleExportConversation}
           className="export-button"
         >
-          <i class="fa fa-file-export"></i>
+          <i className="fa fa-file-export"></i>
         </button>
 
         <button
           id="text"
           onClick={handleStartButtonClick}
-          disabled={status.includes("Permiso denegado")}
           className="text-button"
         >
-          <i class="fa fa-chart-bar"></i>
+          <i className="fa fa-chart-bar"></i>
         </button>
 
         <button
           id="cost"
           onClick={handleStartButtonClick}
-          disabled={status.includes("Permiso denegado")}
           className="cost-button"
         >
           <i className={"fa fa-piggy-bank"} />
