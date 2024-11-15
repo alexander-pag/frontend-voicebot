@@ -8,6 +8,9 @@ const VoiceToText = () => {
   const [chatMessages, setChatMessages] = useState([]);
   const [mediaRecorder, setMediaRecorder] = useState(null);
   const [showWelcomeMessage, setShowWelcomeMessage] = useState(true);
+  const [cost, setCost] = useState(null);
+  const [wordCount, setWordCount] = useState(null);
+  const [tokenCount, setTokenCount] = useState(null);
 
   const [newVariable, setNewVariable] = useState(0);
   const [emocionesCount, setemocionesCount] = useState(null);
