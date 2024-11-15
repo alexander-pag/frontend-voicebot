@@ -55,7 +55,18 @@ const VoiceToText = () => {
 
         const audioUrl = response.data.audioUrl;
         playAudio(audioUrl);
+
+        if (
+          response.data.user_emotion !== 0 &&
+          response.data.user_emotion !== null &&
+          response.data.user_emotion !== undefined
+        ) {
+          setNewVariable(
+            (prevValue) => (prevValue + response.data.user_emotion) / 2
+          );
+        }
       })
+
       .catch((error) => {
         setError(`Error al comunicarse con el servidor: ${error.message}`);
       });
